@@ -1,0 +1,17 @@
+﻿@using Manager.Models
+@model LoginViewModel
+<div class="row">
+  
+    <!-- removed here # 2 -->
+
+    <div class="col-sm-4 col-sm-offset-4">
+        <h2>Monitoring Portal</h2>
+        <section id="socialLoginForm">
+            @Html.Partial("_ExternalLoginsListPartial", new ExternalLoginListViewModel { ReturnUrl = ViewBag.ReturnUrl })
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
