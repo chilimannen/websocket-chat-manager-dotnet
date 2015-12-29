@@ -29,9 +29,6 @@
     <div class="container body-content">
         @RenderBody()
         <hr />
-        <footer>
-            <p>&copy; @DateTime.Now.Year - System Monitoring</p>
-        </footer>
     </div>
 
     @Scripts.Render("~/bundles/jquery")
@@ -40,6 +37,7 @@
     <script src="~/Scripts/jquery.gridster.with-extras.min.js"></script>
     <script src="~/Scripts/jquery.signalR-2.2.0.min.js"></script>
     <script src="~/SignalR/hubs"></script>
+    <script src="~/Scripts/moment.js"></script>
     <script src="~/Scripts/Chart.min.js"></script>
     <script src="~/Scripts/notify.js"></script>
     
