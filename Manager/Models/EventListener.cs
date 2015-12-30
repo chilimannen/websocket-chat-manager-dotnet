@@ -8,6 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/// <summary>
+/// Listens for events from an Azure event hub.
+/// </summary>
 namespace Manager
 {
     
@@ -18,7 +21,6 @@ namespace Manager
 
         async Task IEventProcessor.CloseAsync(PartitionContext context, CloseReason reason)
         {
-            Trace.WriteLine("Processor Shutting Down. partition = " +  context.Lease.PartitionId + " reason = " + reason);
             if (reason == CloseReason.Shutdown)
             {
                 await context.CheckpointAsync();
@@ -27,7 +29,6 @@ namespace Manager
 
         Task IEventProcessor.OpenAsync(PartitionContext context)
         {
-            Trace.WriteLine("SimpleEventProcessor initialized.  Partition = " + context.Lease.PartitionId + " offset = " + context.Lease.Offset);
             this.checkpointStopWatch = new Stopwatch();
             this.checkpointStopWatch.Start();
             return Task.FromResult<object>(null);

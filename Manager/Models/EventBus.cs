@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
+/// <summary>
+/// Handles the transfer of logging data from the consumer
+/// to client websockets.
+/// </summary>
 namespace Manager.Models
 {
     public class EventBus
     {
         private static readonly EventBus instance = new EventBus();
-        private static LoggingHub hub = null;
+        private static IEventListener listener = null;
 
         private EventBus() { }
 
@@ -20,15 +24,15 @@ namespace Manager.Models
             }
         }
 
-        public void subscribe(LoggingHub subscriber)
+        public void subscribe(IEventListener subscriber)
         {
-            EventBus.hub = subscriber;
+            EventBus.listener = subscriber;
         }
 
         public void put(String message)
         {
-            if (EventBus.hub != null)
-                EventBus.hub.Notify(message);
+            if (EventBus.listener != null)
+                EventBus.listener.Notify(message);
         }
     }
 }

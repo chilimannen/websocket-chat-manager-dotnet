@@ -9,9 +9,13 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Web;
 
+
+/// <summary>
+/// Emits logging data to a SignalR hub.
+/// </summary>
 namespace Manager
 {
-    public class LoggingHub : Hub
+    public class LoggingHub : Hub, IEventListener
     {
         public LoggingHub()
         {

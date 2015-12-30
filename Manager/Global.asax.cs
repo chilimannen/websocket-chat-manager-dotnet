@@ -23,9 +23,8 @@ namespace Manager
             StartEventListener();
         }
 
-        private void StartEventListener()
+        public void StartEventListener()
         {
-            Trace.WriteLine("INIT");
             string eventHubConnectionString = "Endpoint=sb://websock.servicebus.windows.net/;SharedAccessKeyName=LogReader;SharedAccessKey=zGAx5SuwRsXh0Hw0AIrK1AXsJtzfw6tEMcDPHnd435E=";
             string eventHubName = "logging";
             string storageAccountName = "websockmanager";

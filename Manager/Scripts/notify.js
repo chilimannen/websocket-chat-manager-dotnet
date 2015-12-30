@@ -1,5 +1,11 @@
-﻿jQuery(function () {
+﻿/**
+* @author Robin Duda
+*
+* Receives logdata from a signalR hub and uses
+* ChartJS to plot datapoints.
+*/
 
+jQuery(function () {
     jQuery(".gridster ul").gridster({
         widget_base_dimensions: [64, 64],
         widget_margins: [5, 5],
@@ -15,9 +21,9 @@
             }
         }
     }).data('gridster');
-
 });
 
+/** Connect to the SignalR hub. */
 (function () {
     var loggingHub = $.connection.loggingHub;
     $.connection.hub.start();
@@ -33,8 +39,10 @@
     }
 }());
 
-
+// Max number of datapoints to show in graphs.
 var BUFFER_MAX = 30;
+
+// Number of datapoints to record before shifting out old points.
 var buffer = 30;
 
 var graphs = {
@@ -48,6 +56,11 @@ var graphs = {
 };
 
 
+/**
+* Create a new instance of a line-chart.
+* @param graph Canvas reference.
+* @param title Title of the graph.
+*/
 function linechart(graph, title) {
     var ctx = graph.getContext("2d");
     var chart = new Chart(ctx, {
@@ -77,19 +90,25 @@ function linechart(graph, title) {
             },
         }
     });
-
     return chart;
 }
 
 var io_out = linechart(graphs.io_out, "Output");
 var io_in = linechart(graphs.io_in, "Input");
 
+/**
+* Update in/out data.
+* @param message Log data container.
+* @param chart target chart.
+* @param isIndata true: process indata, false : process outdata
+*/
 function updateIO(message, chart, isIndata) {
 
     for (var i = 0; i < message.io.length; i++) {
         var server = message.io[i];
         var exists = false;
 
+        // check if the servers dataset exists, if then add data.
         for (var k = 0; k < chart.data.datasets.length; k++) {
             if (chart.data.datasets[k].label == server.name) {
                 exists = true;
@@ -101,20 +120,8 @@ function updateIO(message, chart, isIndata) {
             }
         }
 
-        if (!exists) {
-            chart.data.datasets.push({
-                label: server.name,
-                borderColor: colorFromName(server.name),
-                pointBorderColor: "rgba(0, 0, 0,1)",
-                pointBackgroundColor: colorFromName(server.name),
-                pointHighlightFill: colorFromName(server.name),
-                pointHighlightStroke: "rgba(220,220,220,1)",
-                backgroundColor: colorFromName(server.name),
-                fill: false,
-                tension: 0,
-                data: [(isIndata) ? server.in : server.out]
-            });
-        }
+        if (!exists) 
+            chart.data.datasets.push(new LineDataset(server, isIndata));
     }
 
     chart.data.labels.push(new Date().toLocaleTimeString());
@@ -125,6 +132,21 @@ function updateIO(message, chart, isIndata) {
     chart.update();
 }
 
+
+function LineDataset(server, isIndata) {
+    this.label = server.name;
+    this.borderColor = colorFromName(server.name);
+    this.pointBorderColor = "rgba(0, 0, 0,1)";
+    this.pointBackgroundColor = colorFromName(server.name);
+    this.pointHighlightFill = colorFromName(server.name);
+    this.pointHighlightStroke =  "rgba(220,220,220,1)";
+    this.backgroundColor = colorFromName(server.name);
+    this.fill = false;
+    this.tension = 0;
+    this.data = [(isIndata) ? server.in : server.out];
+}
+
+// Pie chart to display user spread.
 var users = new Chart(graphs.users.getContext("2d"), {
     type: 'pie',
     data: {
@@ -142,6 +164,11 @@ var users = new Chart(graphs.users.getContext("2d"), {
 
 var colors = {};
 
+/**
+* Update user spread pie chart.
+* @param message contains the log data.
+* @param chart target chart.
+*/
 function updateUsers(message, chart) {
     var data = [];
     var labels = [];
@@ -197,7 +224,7 @@ function colorFromName(name) {
     }
 }
 
-
+// chart to display ready/full servers.
 var servers = new Chart(graphs.servers.getContext("2d"), {
     type: 'bar',
     data: {
@@ -205,14 +232,14 @@ var servers = new Chart(graphs.servers.getContext("2d"), {
         datasets: [
         {
             label: "ready",
-            backgroundColor: "rgba(0, 255, 0, 0.7)",
+            backgroundColor: "rgba(0, 255, 0, 1.0)",
             hoverBackgroundColor: "rgba(0, 255, 0, 1.0)",
             hoverBorderColor: "rgba(0, 0, 0, 1)",
             data: [0]
         },
         {
             label: "full",
-            backgroundColor: "rgba(255, 0, 0, 0.7)",
+            backgroundColor: "rgba(255, 0, 0, 1.0)",
             hoverBackgroundColor: "rgba(255, 0, 0, 1.0)",
             hoverBorderColor: "rgba(0, 0, 0, 1)",
             data: [0]
@@ -236,6 +263,11 @@ var servers = new Chart(graphs.servers.getContext("2d"), {
     }
 });
 
+/**
+* Update server status.
+* @message contains log data.
+* @chart to be updated.
+*/
 function updateServerStatus(message, chart) {
     var full = 0;
     var ready = 0;
@@ -250,14 +282,16 @@ function updateServerStatus(message, chart) {
             ready += 1;
         }
     }
-
       servers.data.datasets[0].data[0] = ready;
       servers.data.datasets[1].data[0] = full;
       servers.update();
 }
 
 
-
+/**
+* Update the counters.
+* @param message contains log data.
+*/
 function updateCounters(message) {
     var rooms = {};
     var users = 0;
